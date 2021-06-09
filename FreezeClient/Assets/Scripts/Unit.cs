@@ -1,48 +1,40 @@
+using System;
+using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+public class Unit : IDisposable
 {
-    public enum State
+    public enum MovingState
     {
         Stay,
         Run
     }
 
-    private State state;
+    public int Id { get; private set; }
+    public ReactiveProperty<MovingState> State { get; private set;} = new ReactiveProperty<MovingState>(MovingState.Stay);
+    public ReactiveProperty<Vector3> Position { get; private set; } = new ReactiveProperty<Vector3>();
+    public List<IDisposable> disposables = new List<IDisposable>();
 
-    //View
-    public Animation stayAnimation;
-    public Animation runAnimation;
-
-    public void MoveTo(Vector3 position, State state)
+    public Unit()
     {
-        if (this.state != state)
-        {
-            switch (state)
-            {
-                case State.Stay:
-                    Stay();
-                    break;
-                case State.Run:
-                    Run();
-                    break;
-            }
-        }
 
-        transform.position = position;
     }
 
-    [ContextMenu(nameof(Run))]
-    private void Run()
+    public Unit(int id)
     {
-        stayAnimation.Stop();
-        runAnimation.Play();
+        Id = id; 
     }
 
-    [ContextMenu(nameof(Stay))]
-    private void Stay()
+    public void MoveTo(Vector3 position, MovingState state)
     {
-        runAnimation.Stop();
-        stayAnimation.Play();
+        this.State.Value = state;
+        this.Position.Value = position;
+    }
+
+    public void Dispose()
+    {
+        disposables.ForEach(x => x.Dispose());
+        disposables.Clear();
     }
 }

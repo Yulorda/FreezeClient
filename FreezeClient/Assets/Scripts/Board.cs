@@ -6,12 +6,9 @@ public class Board : MonoBehaviour
     [SerializeField]
     private GameObject prefab;
 
-    [SerializeField]
-    private Vector2 distance;
-
     private List<GameObject> grid = new List<GameObject>();
 
-    public void CreateBoard(int rank)
+    public void CreateBoard(int rank, Vector2 distance)
     {
         foreach (var element in grid)
         {
@@ -35,6 +32,6 @@ public class Board : MonoBehaviour
     [ContextMenu(nameof(CreateBoard5))]
     private void CreateBoard5()
     {
-        CreateBoard(5);
+        CreateBoard(5, new Vector2(10,10));
     }
 }
