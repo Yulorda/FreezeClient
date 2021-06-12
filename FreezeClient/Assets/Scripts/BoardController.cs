@@ -1,12 +1,38 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
+using Packages;
 
-public class Board : MonoBehaviour
+public class BoardController : MonoBehaviour
 {
     [SerializeField]
     private GameObject prefab;
-
     private List<GameObject> grid = new List<GameObject>();
+
+    private NetworkClient networkClient;
+    private GameProperty gameProperty;
+
+    [Inject]
+    public void Inject(NetworkClient networkClient, GameProperty gameProperty)
+    {
+        this.networkClient = networkClient;
+        this.gameProperty = gameProperty;
+    }
+
+    private void Start()
+    {
+        networkClient.AddListener<BoardProperty>(OnPackageReceive);
+    }
+
+    private void OnDestroy()
+    {
+        networkClient.RemoveListener<BoardProperty>(OnPackageReceive);
+    }
+
+    private void OnPackageReceive(BoardProperty boardProperty)
+    {
+        CreateBoard(boardProperty.rank, gameProperty.distance);
+    }
 
     public void CreateBoard(int rank, Vector2 distance)
     {
@@ -33,5 +59,13 @@ public class Board : MonoBehaviour
     private void CreateBoard5()
     {
         CreateBoard(5, new Vector2(10,10));
+    }
+}
+
+namespace Packages
+{
+    public class BoardProperty
+    {
+        public int rank;
     }
 }
