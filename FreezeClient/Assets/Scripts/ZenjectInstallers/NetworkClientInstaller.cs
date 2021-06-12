@@ -11,7 +11,9 @@ public class NetworkClientInstaller : MonoInstaller
 
     public override void InstallBindings()
     {
-        networkClient = new NetworkClient(new Telepathy.Client(ip, port), new JSONSerializator());
+        var client = new Telepathy.Client(ip, port);
+        networkClient = new NetworkClient(client, new JSONSerializator());
+        client.actionLog = (x) => networkClient.NetworkLogger(x);
         networkClient.Connect();
 
         Container.Bind<NetworkClient>().FromInstance(networkClient).AsSingle();

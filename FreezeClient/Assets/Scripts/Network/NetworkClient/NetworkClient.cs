@@ -1,15 +1,17 @@
-﻿using System;
-using Serializator;
+﻿using Serializator;
+using System;
+using UnityEngine;
 
 //TODO Disposable ?
-public class NetworkClient 
+public class NetworkClient
 {
     public event Action OnConnected;
+
     public event Action OnDisconnected;
 
     protected IClient client;
     protected ISerializator serializator;
-    protected GenericListeners listeners;
+    protected GenericListeners listeners = new GenericListeners();
 
     public bool Connected
     {
@@ -68,16 +70,19 @@ public class NetworkClient
         switch (networkLog.eventType)
         {
             case EventType.Connected:
-                //TODO
+                Debug.Log(networkLog.message);
                 break;
+
             case EventType.Disconnected:
-                //TODO
+                Debug.Log(networkLog.message);
                 break;
+
             case EventType.Error:
-                //TODO
+                Debug.LogError(networkLog.message);
                 break;
+
             case EventType.Data:
-                //TODO
+                Debug.LogWarning(networkLog.message);
                 break;
         }
     }
