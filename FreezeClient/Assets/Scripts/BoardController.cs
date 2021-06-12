@@ -1,12 +1,13 @@
+using Packages;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
-using Packages;
 
 public class BoardController : MonoBehaviour
 {
     [SerializeField]
     private GameObject prefab;
+
     private List<GameObject> grid = new List<GameObject>();
 
     private NetworkClient networkClient;
@@ -48,7 +49,7 @@ public class BoardController : MonoBehaviour
             float deltaX = 0f;
             for (int j = 0; j < rank; j++)
             {
-                var temp = Instantiate(prefab, new Vector3(deltaX,0, deltaZ), new Quaternion(), transform);
+                var temp = Instantiate(prefab, new Vector3(deltaX, 0, deltaZ), new Quaternion(), transform);
                 deltaX += distance.x;
             }
             deltaZ += distance.y;
@@ -58,7 +59,7 @@ public class BoardController : MonoBehaviour
     [ContextMenu(nameof(CreateBoard5))]
     private void CreateBoard5()
     {
-        CreateBoard(5, new Vector2(10,10));
+        CreateBoard(5, new Vector2(10, 10));
     }
 }
 

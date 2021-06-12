@@ -2,18 +2,24 @@
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
+using Zenject;
 
 public class UnitPrsenter : MonoBehaviour, IDisposable
 {
-    [SerializeField]
-    private Animation stayAnimation;
-    [SerializeField]
-    private Animation runAnimation;
+    private MeshRenderer meshRenderer;
+
+    [Inject]
+    private GameProperty gameProperty;
 
     public List<IDisposable> disposables = new List<IDisposable>();
 
     public void InjectModel(Unit unit)
     {
+        if (!meshRenderer)
+        {
+            meshRenderer = GetComponent<MeshRenderer>();
+        }
+
         disposables.Add(unit.State.Subscribe(x =>
         {
             if (x == UnitState.Run)
@@ -21,7 +27,10 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
             else
                 Stay();
         }));
-        disposables.Add(unit.Position.Subscribe(x => transform.position = x));
+
+        disposables.Add(unit.Position.Subscribe(x =>
+            transform.position = new Vector3(x.x * gameProperty.distance.x, transform.position.y, x.y * gameProperty.distance.y)));
+
         transform.position = unit.Position.Value;
         gameObject.SetActive(true);
     }
@@ -36,14 +45,12 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
     [ContextMenu(nameof(Run))]
     private void Run()
     {
-        stayAnimation.Stop();
-        runAnimation.Play();
+        meshRenderer.material.SetColor("_Color", Color.green);
     }
 
     [ContextMenu(nameof(Stay))]
     private void Stay()
     {
-        runAnimation.Stop();
-        stayAnimation.Play();
+        meshRenderer.material.SetColor("_Color", Color.white);
     }
 }

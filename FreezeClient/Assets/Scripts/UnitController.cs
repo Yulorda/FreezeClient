@@ -10,15 +10,13 @@ public class UnitController : MonoBehaviour
     public Transform content;
     public UnitPrsenter prefab;
 
-    private GameProperty gameProperty;
     private NetworkClient networkClient;
 
     private Dictionary<int, Unit> units = new Dictionary<int, Unit>();
 
     [Inject]
-    public void Inject(GameProperty gameProperty, NetworkClient networkClient)
+    public void Inject(NetworkClient networkClient)
     {
-        this.gameProperty = gameProperty;
         this.networkClient = networkClient;
     }
 

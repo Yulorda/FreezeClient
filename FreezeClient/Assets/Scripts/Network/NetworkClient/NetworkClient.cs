@@ -1,6 +1,7 @@
 ﻿using System;
 using Serializator;
 
+//TODO Disposable ?
 public class NetworkClient 
 {
     public event Action OnConnected;
