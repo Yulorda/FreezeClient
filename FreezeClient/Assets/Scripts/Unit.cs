@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 
+[Serializable]
+public enum UnitState
+{
+    Stay,
+    Run
+}
+
 public class Unit : IDisposable
 {
-    public enum MovingState
-    {
-        Stay,
-        Run
-    }
-
-    public int Id { get; private set; }
-    public ReactiveProperty<MovingState> State { get; private set;} = new ReactiveProperty<MovingState>(MovingState.Stay);
-    public ReactiveProperty<Vector3> Position { get; private set; } = new ReactiveProperty<Vector3>();
+    public ReactiveProperty<UnitState> State { get; private set;} = new ReactiveProperty<UnitState>(UnitState.Stay);
+    public ReactiveProperty<Vector2> Position { get; private set; } = new ReactiveProperty<Vector2>();
     public List<IDisposable> disposables = new List<IDisposable>();
 
     public Unit()
@@ -21,12 +21,12 @@ public class Unit : IDisposable
 
     }
 
-    public Unit(int id)
+    public Unit(Vector2 position, UnitState state)
     {
-        Id = id; 
+        MoveTo(position, state);
     }
 
-    public void MoveTo(Vector3 position, MovingState state)
+    public void MoveTo(Vector2 position, UnitState state)
     {
         this.State.Value = state;
         this.Position.Value = position;

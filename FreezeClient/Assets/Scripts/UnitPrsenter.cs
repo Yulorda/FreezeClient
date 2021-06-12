@@ -16,12 +16,14 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
     {
         disposables.Add(unit.State.Subscribe(x =>
         {
-            if (x == Unit.MovingState.Run)
+            if (x == UnitState.Run)
                 Run();
             else
                 Stay();
         }));
         disposables.Add(unit.Position.Subscribe(x => transform.position = x));
+        transform.position = unit.Position.Value;
+        gameObject.SetActive(true);
     }
 
     public void Dispose()
