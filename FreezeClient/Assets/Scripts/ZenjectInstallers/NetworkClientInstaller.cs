@@ -1,4 +1,5 @@
 using Serializator;
+using System.Collections;
 using UnityEngine;
 using Zenject;
 
@@ -13,15 +14,29 @@ public class NetworkClientInstaller : MonoInstaller
     {
         var client = new Telepathy.Client(ip, port);
         networkClient = new NetworkClient(client, new JSONSerializator());
-        client.actionLog = (x) => networkClient.NetworkLogger(x);
-        networkClient.Connect();
-
         Container.Bind<NetworkClient>().FromInstance(networkClient).AsSingle();
+        client.actionLog = (x) => networkClient.NetworkLogger(x);
     }
 
     private void OnDestroy()
     {
         networkClient.Disconnect();
         //TODO networkClient.Dispose() ???
+    }
+
+    private IEnumerator UpdateInformation()
+    {
+        while (true)
+        {
+            yield return new WaitForEndOfFrame();
+            networkClient.Update();
+        }
+    }
+
+    [ContextMenu(nameof(ConnectToServer))]
+    public void ConnectToServer()
+    {
+        networkClient.Connect();
+        StartCoroutine(UpdateInformation());
     }
 }

@@ -55,7 +55,7 @@ public class NetworkClient
             {
                 if (serializator.TryDeserialize(package, out var T))
                 {
-                    listeners.Invoke(T, package.GetType());
+                    listeners.Invoke(T, T.GetType());
                 }
                 else
                 {
