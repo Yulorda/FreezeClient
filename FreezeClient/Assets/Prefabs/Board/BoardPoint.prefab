@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 8394928702004363684}
   - component: {fileID: 8394928702004363685}
   - component: {fileID: 8394928702004363686}
-  m_Layer: 0
-  m_Name: Sphere
+  m_Layer: 6
+  m_Name: BoardPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
