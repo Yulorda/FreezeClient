@@ -23,7 +23,7 @@ public class SelectionRectanglePresenter : MonoBehaviour
 
     public void Inject(SelectionRectangleModel model)
     {
-        disposables.Add(model.onRectangleSizeChange.Subscribe(x=> 
+        disposables.Add(model.onRectangleSizeChange.Subscribe(x =>
         {
             OnPositionChange(model.RectanglePosition);
             OnSizeChange(model.SizeDelta);

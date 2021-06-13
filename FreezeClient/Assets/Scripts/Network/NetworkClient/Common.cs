@@ -61,7 +61,7 @@ namespace Telepathy
             }
             catch (Exception exception)
             {
-                log?.Invoke(new NetworkLog(EventType.Error,"Send: stream.Write exception: " + exception));
+                log?.Invoke(new NetworkLog(EventType.Error, "Send: stream.Write exception: " + exception));
                 return false;
             }
         }
@@ -105,7 +105,7 @@ namespace Telepathy
                         break;
                     }
 
-                    log?.Invoke(new NetworkLog((EventType.Data),Encoding.Default.GetString(content)));
+                    log?.Invoke(new NetworkLog((EventType.Data), Encoding.Default.GetString(content)));
                     receiveQueue.Enqueue(content);
 
                     if (receiveQueue.Count > messageQueueSizeWarning)
@@ -113,15 +113,15 @@ namespace Telepathy
                         TimeSpan elapsed = DateTime.Now - messageQueueLastWarning;
                         if (elapsed.TotalSeconds > 10)
                         {
-                            log?.Invoke(new NetworkLog(EventType.Data,"ReceiveLoop: messageQueue is getting big(" + receiveQueue.Count + "), try calling GetNextMessage more often. You can call it more than once per frame!"));
+                            log?.Invoke(new NetworkLog(EventType.Data, "ReceiveLoop: messageQueue is getting big(" + receiveQueue.Count + "), try calling GetNextMessage more often. You can call it more than once per frame!"));
                             messageQueueLastWarning = DateTime.Now;
                         }
                     }
                 }
             }
-            catch 
+            catch
             {
-                log?.Invoke(new NetworkLog(EventType.Error,"ReceiveLoop: finished receive function for connectionId=" + " reason: "));
+                log?.Invoke(new NetworkLog(EventType.Error, "ReceiveLoop: finished receive function for connectionId=" + " reason: "));
             }
             finally
             {
@@ -130,7 +130,7 @@ namespace Telepathy
             }
         }
 
-        protected static void SendLoop(TcpClient client, SafeQueue<byte[]> sendQueue, ManualResetEvent sendPending, Action<NetworkLog> log = null)        
+        protected static void SendLoop(TcpClient client, SafeQueue<byte[]> sendQueue, ManualResetEvent sendPending, Action<NetworkLog> log = null)
         {
             NetworkStream stream = client.GetStream();
 

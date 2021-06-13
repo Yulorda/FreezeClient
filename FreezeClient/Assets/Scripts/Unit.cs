@@ -13,7 +13,7 @@ public enum UnitState
 public class Unit : IDisposable
 {
     public readonly int id;
-    public ReactiveProperty<UnitState> State { get; private set;} = new ReactiveProperty<UnitState>(UnitState.Stay);
+    public ReactiveProperty<UnitState> State { get; private set; } = new ReactiveProperty<UnitState>(UnitState.Stay);
     public ReactiveProperty<Vector2> Position { get; private set; } = new ReactiveProperty<Vector2>();
     public ReactiveProperty<bool> Selected { get; private set; } = new ReactiveProperty<bool>();
 
@@ -24,7 +24,7 @@ public class Unit : IDisposable
         this.id = id;
     }
 
-    public Unit(int id, Vector2 position, UnitState state) : this (id)
+    public Unit(int id, Vector2 position, UnitState state) : this(id)
     {
         MoveTo(position, state);
     }

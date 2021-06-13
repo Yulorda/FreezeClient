@@ -5,7 +5,6 @@ using UnityEngine;
 public class GameProperty : ScriptableObject
 {
     public Vector2 distance;
-
 }
 
 public static class ExtensionVectors
@@ -20,5 +19,3 @@ public static class ExtensionVectors
         return new Vector2(v.x, v.z);
     }
 }
-
-

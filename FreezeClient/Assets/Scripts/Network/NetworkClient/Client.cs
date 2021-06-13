@@ -7,7 +7,7 @@ namespace Telepathy
 {
     public class Client : Common, IClient
     {
-        TcpClient client;
+        private TcpClient client;
 
         public Action<NetworkLog> actionLog;
 
@@ -25,11 +25,10 @@ namespace Telepathy
 
         private ManualResetEvent sendPending = new ManualResetEvent(false);
 
-
         private string ip;
         private int port;
 
-        public Client(string ip, int port) 
+        public Client(string ip, int port)
         {
             this.ip = ip;
             this.port = port;
