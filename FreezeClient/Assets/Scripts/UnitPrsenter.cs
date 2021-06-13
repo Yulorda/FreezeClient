@@ -6,12 +6,12 @@ using Zenject;
 
 public class UnitPrsenter : MonoBehaviour, IDisposable
 {
+    public List<IDisposable> disposables = new List<IDisposable>();
+
     private MeshRenderer meshRenderer;
 
     [Inject]
     private GameProperty gameProperty;
-
-    public List<IDisposable> disposables = new List<IDisposable>();
 
     public void InjectModel(Unit unit)
     {
@@ -20,19 +20,33 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
             meshRenderer = GetComponent<MeshRenderer>();
         }
 
-        disposables.Add(unit.State.Subscribe(x =>
-        {
-            if (x == UnitState.Run)
-                Run();
-            else
-                Stay();
-        }));
+        disposables.Add(unit.State.Subscribe(x => ChangeColor()));
+        disposables.Add(unit.Selected.Subscribe(x => ChangeColor()));
 
-        disposables.Add(unit.Position.Subscribe(x =>
-            transform.position = new Vector3(x.x * gameProperty.distance.x, transform.position.y, x.y * gameProperty.distance.y)));
+        disposables.Add(unit.Position.Subscribe(position => transform.position = (unit.Position.Value * gameProperty.distance).XZ()));
 
-        transform.position = unit.Position.Value;
+        transform.position = (unit.Position.Value * gameProperty.distance).XZ();
+
         gameObject.SetActive(true);
+
+        void ChangeColor()
+        {
+            if (!unit.Selected.Value)
+            {
+                if (unit.State.Value == UnitState.Run)
+                {
+                    meshRenderer.material.SetColor("_Color", Color.green);
+                }
+                else
+                {
+                    meshRenderer.material.SetColor("_Color", Color.white);
+                }
+            }
+            else
+            {
+                meshRenderer.material.SetColor("_Color", Color.red);
+            }
+        }
     }
 
     public void Dispose()
@@ -40,17 +54,5 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
         disposables.ForEach(x => x.Dispose());
         disposables.Clear();
         DestroyImmediate(this.gameObject);
-    }
-
-    [ContextMenu(nameof(Run))]
-    private void Run()
-    {
-        meshRenderer.material.SetColor("_Color", Color.green);
-    }
-
-    [ContextMenu(nameof(Stay))]
-    private void Stay()
-    {
-        meshRenderer.material.SetColor("_Color", Color.white);
     }
 }

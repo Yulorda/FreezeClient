@@ -1,4 +1,4 @@
-using Packages;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -63,10 +63,8 @@ public class BoardController : MonoBehaviour
     }
 }
 
-namespace Packages
+[Serializable]
+public class BoardProperty
 {
-    public class BoardProperty
-    {
-        public int rank;
-    }
+    public int rank;
 }
