@@ -1,7 +1,7 @@
-﻿    public enum EventType
-    {
-        Connected,
-        Data,
-        Error,
-        Disconnected
-    }
+﻿public enum EventType
+{
+    Connected,
+    Data,
+    Error,
+    Disconnected
+}

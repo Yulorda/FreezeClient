@@ -2,7 +2,7 @@
 
 public class SafeQueue<T>
 {
-    readonly Queue<T> queue = new Queue<T>();
+    private readonly Queue<T> queue = new Queue<T>();
 
     public int Count
     {
