@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 using Zenject;
+using PZDC;
+using Unit = PZDC.Unit;
 
 public class UnitPrsenter : MonoBehaviour, IDisposable
 {
@@ -11,7 +13,7 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
     private MeshRenderer meshRenderer;
 
     [Inject]
-    private GameProperty gameProperty;
+    private GridSize gameProperty;
 
     public void InjectModel(Unit unit)
     {
@@ -23,9 +25,9 @@ public class UnitPrsenter : MonoBehaviour, IDisposable
         disposables.Add(unit.State.Subscribe(x => ChangeColor()));
         disposables.Add(unit.Selected.Subscribe(x => ChangeColor()));
 
-        disposables.Add(unit.Position.Subscribe(position => transform.position = (unit.Position.Value * gameProperty.distance).XZ()));
+        disposables.Add(unit.Position.Subscribe(position => transform.position = (unit.Position.Value * gameProperty.gridSize).XZ()));
 
-        transform.position = (unit.Position.Value * gameProperty.distance).XZ();
+        transform.position = (unit.Position.Value * gameProperty.gridSize).XZ();
 
         gameObject.SetActive(true);
 

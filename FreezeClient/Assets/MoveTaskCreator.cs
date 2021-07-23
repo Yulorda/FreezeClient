@@ -4,45 +4,49 @@ using System.Linq;
 using UnityEngine;
 using Zenject;
 
-public class MoveTaskCreator : MonoBehaviour
+namespace PZDC
 {
-    [SerializeField]
-    private UnitController unitController;
-
-    [SerializeField]
-    private LayerMask layerMask;
-
-    private NetworkClient networkClient;
-    private GameProperty gameProperty;
-
-    [Inject]
-    public void Inject(NetworkClient networkClient, GameProperty gameProperty)
+    public class MoveTaskCreator : MonoBehaviour
     {
-        this.networkClient = networkClient;
-        this.gameProperty = gameProperty;
-    }
+        [SerializeField]
+        private UnitController unitController;
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonUp(1))
+        [SerializeField]
+        private LayerMask layerMask;
+
+        private NetworkClient networkClient;
+        private GridSize gameProperty;
+
+        [Inject]
+        public void Inject(NetworkClient networkClient, GridSize gameProperty)
         {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            this.networkClient = networkClient;
+            this.gameProperty = gameProperty;
+        }
 
-            if (Physics.Raycast(ray, out hit, 1000, layerMask))
+        private void Update()
+        {
+            return;
+            if (Input.GetMouseButtonUp(1))
             {
-                var position = (hit.collider.transform.position).XZ() / gameProperty.distance;
-                networkClient.Send(new MoveTask()
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out hit, 1000, layerMask))
                 {
-                    unitMoveStates = unitController.GetSelectedUnits().Select(x => new UnitMoveState() { id = x.id, position = position, state = UnitState.Run }).ToList()
-                });
+                    var position = (hit.collider.transform.position).XZ() / gameProperty.gridSize;
+                    networkClient.Send(new MoveTask()
+                    {
+                        unitMoveStates = unitController.GetSelectedUnits().Select(x => new UnitMoveState() { id = x.id, position = position, state = UnitState.Run }).ToList()
+                    });
+                }
             }
         }
     }
-}
 
-[Serializable]
-public class MoveTask
-{
-    public List<UnitMoveState> unitMoveStates = new List<UnitMoveState>();
+    [Serializable]
+    public class MoveTask
+    {
+        public List<UnitMoveState> unitMoveStates = new List<UnitMoveState>();
+    }
 }

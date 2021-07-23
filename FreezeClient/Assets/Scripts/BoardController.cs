@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 using Zenject;
 
@@ -8,31 +9,21 @@ public class BoardController : MonoBehaviour
     [SerializeField]
     private GameObject prefab;
 
-    private List<GameObject> grid = new List<GameObject>();
-
-    private NetworkClient networkClient;
-    private GameProperty gameProperty;
-
     [Inject]
-    public void Inject(NetworkClient networkClient, GameProperty gameProperty)
-    {
-        this.networkClient = networkClient;
-        this.gameProperty = gameProperty;
-    }
+    private NetworkClient networkClient;
+    [Inject]
+    private GridSize gameProperty;
 
-    private void Start()
+    private List<GameObject> grid = new List<GameObject>();
+    
+    private void Awake()
     {
-        networkClient.AddListener<BoardProperty>(OnPackageReceive);
-    }
-
-    private void OnDestroy()
-    {
-        networkClient.RemoveListener<BoardProperty>(OnPackageReceive);
+        networkClient.AddListener<BoardProperty>(OnPackageReceive).AddTo(this.gameObject);
     }
 
     private void OnPackageReceive(BoardProperty boardProperty)
     {
-        CreateBoard(boardProperty.rank, gameProperty.distance);
+        CreateBoard(boardProperty.rank, gameProperty.gridSize);
     }
 
     public void CreateBoard(int rank, Vector2 distance)
@@ -54,12 +45,6 @@ public class BoardController : MonoBehaviour
             }
             deltaZ += distance.y;
         }
-    }
-
-    [ContextMenu(nameof(CreateBoard5))]
-    private void CreateBoard5()
-    {
-        CreateBoard(5, new Vector2(10, 10));
     }
 }
 

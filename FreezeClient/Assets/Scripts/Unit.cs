@@ -10,34 +10,37 @@ public enum UnitState
     Run
 }
 
-public class Unit : IDisposable
+namespace PZDC
 {
-    public readonly int id;
-    public ReactiveProperty<UnitState> State { get; private set; } = new ReactiveProperty<UnitState>(UnitState.Stay);
-    public ReactiveProperty<Vector2> Position { get; private set; } = new ReactiveProperty<Vector2>();
-    public ReactiveProperty<bool> Selected { get; private set; } = new ReactiveProperty<bool>();
-
-    public List<IDisposable> disposables = new List<IDisposable>();
-
-    public Unit(int id)
+    public class Unit : IDisposable
     {
-        this.id = id;
-    }
+        public readonly int id;
+        public ReactiveProperty<UnitState> State { get; private set; } = new ReactiveProperty<UnitState>(UnitState.Stay);
+        public ReactiveProperty<Vector2> Position { get; private set; } = new ReactiveProperty<Vector2>();
+        public ReactiveProperty<bool> Selected { get; private set; } = new ReactiveProperty<bool>();
 
-    public Unit(int id, Vector2 position, UnitState state) : this(id)
-    {
-        MoveTo(position, state);
-    }
+        public List<IDisposable> disposables = new List<IDisposable>();
 
-    public void MoveTo(Vector2 position, UnitState state)
-    {
-        this.State.Value = state;
-        this.Position.Value = position;
-    }
+        public Unit(int id)
+        {
+            this.id = id;
+        }
 
-    public void Dispose()
-    {
-        disposables.ForEach(x => x.Dispose());
-        disposables.Clear();
+        public Unit(int id, Vector2 position, UnitState state) : this(id)
+        {
+            MoveTo(position, state);
+        }
+
+        public void MoveTo(Vector2 position, UnitState state)
+        {
+            this.State.Value = state;
+            this.Position.Value = position;
+        }
+
+        public void Dispose()
+        {
+            disposables.ForEach(x => x.Dispose());
+            disposables.Clear();
+        }
     }
 }

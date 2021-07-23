@@ -1,25 +1,19 @@
 ﻿using Serializator;
 using System;
+using UniRxMessageBroker;
 using UnityEngine;
+using UniRx;
+using System.Collections.Generic;
 
-//TODO Disposable ?
-public class NetworkClient
+public class NetworkClient : IDisposable
 {
     public event Action OnConnected;
-
     public event Action OnDisconnected;
 
     protected IClient client;
     protected ISerializator serializator;
-    protected GenericListeners listeners = new GenericListeners();
-
-    public bool Connected
-    {
-        get
-        {
-            return client.Connected;
-        }
-    }
+    protected Broker messageBroker = new Broker();
+    private List<IDisposable> disposables = new List<IDisposable>();
 
     public NetworkClient(IClient client, ISerializator serializator)
     {
@@ -27,19 +21,30 @@ public class NetworkClient
         this.serializator = serializator;
     }
 
-    public void AddListener<T>(Action<T> handler) where T : class
+    public IDisposable AddListener<T>(Action<T> handler) where T : class
     {
-        listeners.AddListener(handler);
-    }
-
-    public void RemoveListener<T>(Action<T> handler) where T : class
-    {
-        listeners.RemoveListener(handler);
+        return messageBroker.Receive<T>().Subscribe(handler);
     }
 
     public virtual void Connect()
     {
         client.Connect();
+        disposables.Add(client.ObserveEveryValueChanged(x => x.State, FrameCountType.EndOfFrame).Subscribe(ConnectionStateChange));
+    }
+
+    private void ConnectionStateChange(IClient.Status state)
+    {
+        switch (state)
+        {
+            case IClient.Status.Disconnect:
+                OnDisconnected?.Invoke();
+                break;
+            case IClient.Status.Connectind:
+                break;
+            case IClient.Status.Connected:
+                OnConnected?.Invoke();
+                break;
+        }
     }
 
     public virtual void Send(object value)
@@ -49,13 +54,13 @@ public class NetworkClient
 
     public virtual void Update()
     {
-        if (client.Connected)
+        if (client.State == IClient.Status.Connected)
         {
             while (client.TryGetPackage(out var package))
             {
-                if (serializator.TryDeserialize(package, out var T))
+                if (serializator.TryDeserialize(package, out var type, out var value))
                 {
-                    listeners.Invoke(T, T.GetType());
+                    messageBroker.Publish(value, type);
                 }
                 else
                 {
@@ -90,5 +95,12 @@ public class NetworkClient
     public void Disconnect()
     {
         client.Disconnect();
+    }
+
+    public void Dispose()
+    {
+        messageBroker.Dispose();
+        client.Dispose();
+        disposables.Clear();
     }
 }

@@ -1,40 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using UniRx;
+﻿using UniRx;
 using UnityEngine;
+using Zenject;
 
 public class SelectionRectanglePresenter : MonoBehaviour
 {
     [SerializeField]
     private RectTransform rectTransform;
 
-    private List<IDisposable> disposables = new List<IDisposable>();
-
-    private void Awake()
+    [Inject]
+    public void Init(SelectionRectangleModel model)
     {
-        Inject(GetComponentInParent<SelectionRectangleModel>());
-    }
-
-    private void OnDestroy()
-    {
-        disposables.ForEach(x => x.Dispose());
-        disposables.Clear();
-    }
-
-    public void Inject(SelectionRectangleModel model)
-    {
-        disposables.Add(model.onRectangleSizeChange.Subscribe(x =>
+        model.onRectangleSizeChange.Subscribe(x =>
         {
             OnPositionChange(model.RectanglePosition);
             OnSizeChange(model.SizeDelta);
-        }));
+        }).AddTo(this.gameObject);
 
-        disposables.Add(model.state.Subscribe(OnStateChange));
+        model.state.Subscribe(OnStateChange).AddTo(this.gameObject);
     }
 
     private void OnStateChange(SelectionState selectionState)
     {
-        rectTransform.gameObject.SetActive(selectionState == SelectionState.Drag);
+        rectTransform.gameObject.SetActive(selectionState == SelectionState.Draging);
     }
 
     private void OnPositionChange(Vector3 value)

@@ -4,10 +4,10 @@ using Zenject;
 public class GamePropertyInstaller : MonoInstaller
 {
     [SerializeField]
-    private GameProperty gameProperty;
+    private GridSize gameProperty;
 
     public override void InstallBindings()
     {
-        Container.Bind<GameProperty>().FromInstance(Instantiate(gameProperty)).AsSingle();
+        Container.Bind<GridSize>().FromInstance(Instantiate(gameProperty)).AsSingle();
     }
 }

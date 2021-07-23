@@ -1,6 +1,16 @@
-﻿public interface IClient
+﻿using System;
+
+
+public interface IClient : IDisposable
 {
-    bool Connected { get; }
+    public enum Status
+    {
+        Disconnect,
+        Connectind,
+        Connected,
+    }
+
+    Status State { get; }
 
     void Connect();
 

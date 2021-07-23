@@ -1,66 +1,34 @@
+using System;
+using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public enum SelectionState
 {
     None,
-    Click,
-    Drag,
-    Up
+    StartDragging,
+    Draging,
+    EndDrag,
 }
 
-public class SelectionRectangleModel : MonoBehaviour
+public class SelectionRectangleModel : IDisposable
 {
-    [HideInInspector]
+    public ReactiveCommand onRectangleSizeChange = new ReactiveCommand();
     public ReactiveProperty<SelectionState> state = new ReactiveProperty<SelectionState>();
 
-    public ReactiveCommand onRectangleSizeChange = new ReactiveCommand();
+    public Vector2 RectanglePosition { get; private set; } = new Vector3();
+    public Vector2 SizeDelta { get; private set; } = new Vector3();
 
-    public Vector3 RectanglePosition { get; private set; } = new Vector3();
-    public Vector3 SizeDelta { get; private set; } = new Vector3();
-
-    private float delay = 0.15f;
-    private float lastClickTime = 0f;
-    private Vector3 rectangleStartPosition;
+    private Vector2 rectangleStartPosition;
     private Vector3 TL, TR, BL, BR;
     private Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+    private InputData inputData;
+    private IDisposable dragging;
+    private Camera camera;
 
-    private void LateUpdate()
-    {
-        CheckInput();
-    }
-
-    private void CheckInput()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            lastClickTime = Time.time;
-            rectangleStartPosition = Input.mousePosition;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            if (Time.time - lastClickTime <= delay)
-            {
-                state.Value = SelectionState.Click;
-            }
-            else
-            {
-                state.Value = SelectionState.Up;
-            }
-        }
-        else if (Input.GetMouseButton(0))
-        {
-            if (Time.time - lastClickTime > delay)
-            {
-                ChangeRectangleView();
-                state.Value = SelectionState.Drag;
-            }
-        }
-        else
-        {
-            state.Value = SelectionState.None;
-        }
-    }
+    private List<IDisposable> disposables = new List<IDisposable>();
 
     public bool IsRectangleContains(Vector3 unitPos)
     {
@@ -74,6 +42,68 @@ public class SelectionRectangleModel : MonoBehaviour
             return true;
         }
         return isWithinPolygon;
+    }
+
+    public SelectionRectangleModel(Camera camera)
+    {
+        this.camera = camera;
+
+        inputData = new InputData();
+        inputData.Enable();
+
+        disposables.Add(Observable.FromEvent<InputAction.CallbackContext>(
+             e => inputData.UI.Hold.started += e,
+             e => inputData.UI.Hold.started -= e
+             )
+             .Subscribe(x => OnStarted(x)));
+
+        disposables.Add(Observable.FromEvent<InputAction.CallbackContext>(
+                e => inputData.UI.Hold.performed += e,
+                e => inputData.UI.Hold.performed -= e
+                )
+                .Subscribe(x => OnPressed(x)));
+
+        disposables.Add(Observable.FromEvent<InputAction.CallbackContext>(
+             e => inputData.UI.Hold.canceled += e,
+             e => inputData.UI.Hold.canceled -= e
+             )
+             .Subscribe(x => OnEnd(x)));
+    }
+
+    private void OnStarted(InputAction.CallbackContext obj)
+    {
+        state.Value = SelectionState.None;
+        var pointPosition = inputData.UI.Point.ReadValue<Vector2>();
+
+        //TODO вынести в отдельный класс
+        bool ignoreThisMovementBecauseOfRect = !PositionInCameraRect(pointPosition.x, pointPosition.y);
+        bool ignoreThisMovementBecauseOfUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        bool thisMovementShouldBeIgnored = ignoreThisMovementBecauseOfRect || ignoreThisMovementBecauseOfUI;
+        if (thisMovementShouldBeIgnored)
+            return;
+
+        rectangleStartPosition = pointPosition;
+        state.Value = SelectionState.StartDragging;
+    }
+
+    private void OnPressed(InputAction.CallbackContext obj)
+    {
+        if (state.Value != SelectionState.StartDragging)
+        {
+            return;
+        }
+
+        state.Value = SelectionState.Draging;
+        dragging = Observable.EveryEndOfFrame().Subscribe(x => ChangeRectangleView());
+    }
+
+    private void OnEnd(InputAction.CallbackContext obj)
+    {
+        if (state.Value == SelectionState.Draging)
+            state.Value = SelectionState.EndDrag;
+
+        if (dragging != null)
+            dragging.Dispose();
     }
 
     private bool IsTriangleContains(Vector3 p, Vector3 p1, Vector3 p2, Vector3 p3)
@@ -96,15 +126,14 @@ public class SelectionRectangleModel : MonoBehaviour
 
     private void ChangeRectangleView()
     {
-        Vector3 rectangleEndPos = Input.mousePosition;
-        Vector3 middle = (rectangleStartPosition + rectangleEndPos) / 2f;
+        var rectangleEndPos = inputData.UI.Point.ReadValue<Vector2>();
+        Vector2 middle = (rectangleStartPosition + rectangleEndPos) / 2f;
         RectanglePosition = middle;
 
         float sizeX = Mathf.Abs(rectangleStartPosition.x - rectangleEndPos.x);
         float sizeY = Mathf.Abs(rectangleStartPosition.y - rectangleEndPos.y);
 
         SizeDelta = new Vector2(sizeX, sizeY);
-
         float halfSizeX = sizeX * 0.5f;
         float halfSizeY = sizeY * 0.5f;
 
@@ -138,5 +167,16 @@ public class SelectionRectangleModel : MonoBehaviour
         }
 
         onRectangleSizeChange.Execute();
+    }
+
+    private bool PositionInCameraRect(float x, float y)
+    {
+        return x >= Screen.width * camera.rect.xMin && y >= Screen.height * camera.rect.yMin && x <= Screen.width * camera.rect.xMax && y <= Screen.height * camera.rect.yMax;
+    }
+
+    public void Dispose()
+    {
+        disposables.ForEach(x => x.Dispose());
+        disposables.Clear();
     }
 }

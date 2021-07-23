@@ -18,8 +18,9 @@ namespace Telepathy
                                    client.Client != null &&
                                    client.Client.Connected;
 
-        private volatile bool _Connecting;
-        public bool Connecting => _Connecting;
+        public IClient.Status State => Connected ? IClient.Status.Connected : connecting ? IClient.Status.Connectind : IClient.Status.Disconnect;
+
+        private volatile bool connecting;
 
         private SafeQueue<byte[]> sendQueue = new SafeQueue<byte[]>();
 
@@ -39,7 +40,7 @@ namespace Telepathy
             try
             {
                 client.Connect(ip, port);
-                _Connecting = false;
+                connecting = false;
 
                 client.NoDelay = NoDelay;
                 client.SendTimeout = SendTimeout;
@@ -70,19 +71,19 @@ namespace Telepathy
 
             actionLog?.Invoke(new NetworkLog(EventType.Disconnected));
             sendThread?.Interrupt();
-            _Connecting = false;
+            connecting = false;
             client?.Close();
         }
 
         public void Connect(string ip, int port)
         {
-            if (Connecting || Connected)
+            if (connecting || Connected)
             {
                 actionLog?.Invoke(new NetworkLog(EventType.Error, "Telepathy Client can not create connection because an existing connection is connecting or connected"));
                 return;
             }
 
-            _Connecting = true;
+            connecting = true;
 
             receiveQueue = new ConcurrentQueue<byte[]>();
 
@@ -98,13 +99,11 @@ namespace Telepathy
 
         public void Disconnect()
         {
-            if (Connecting || Connected)
+            if (connecting || Connected)
             {
                 client.Close();
                 receiveThread?.Interrupt();
-                _Connecting = false;
-                sendQueue.Clear();
-                client = null;
+                connecting = false;
             }
         }
 
@@ -128,6 +127,14 @@ namespace Telepathy
         public bool TryGetPackage(out byte[] networkPackage)
         {
             return GetNextMessage(out networkPackage);
+        }
+
+        public void Dispose()
+        {
+            Disconnect();
+            sendThread?.Interrupt();
+            sendQueue.Clear();
+            client = null;
         }
     }
 }

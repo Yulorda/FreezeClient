@@ -20,8 +20,16 @@ public class NetworkClientInstaller : MonoInstaller
 
     private void OnDestroy()
     {
+        StopAllCoroutines();
         networkClient.Disconnect();
-        //TODO networkClient.Dispose() ???
+        networkClient.Dispose();
+    }
+
+    [ContextMenu(nameof(ConnectToServer))]
+    public void ConnectToServer()
+    {
+        networkClient.Connect();
+        StartCoroutine(UpdateInformation());
     }
 
     private IEnumerator UpdateInformation()
@@ -31,12 +39,5 @@ public class NetworkClientInstaller : MonoInstaller
             yield return new WaitForEndOfFrame();
             networkClient.Update();
         }
-    }
-
-    [ContextMenu(nameof(ConnectToServer))]
-    public void ConnectToServer()
-    {
-        networkClient.Connect();
-        StartCoroutine(UpdateInformation());
     }
 }

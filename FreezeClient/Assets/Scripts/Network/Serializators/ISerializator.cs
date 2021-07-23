@@ -1,8 +1,10 @@
-﻿namespace Serializator
+﻿using System;
+
+namespace Serializator
 {
     public interface ISerializator
     {
-        bool TryDeserialize(byte[] message, out object networkPackage);
+        bool TryDeserialize(byte[] message, out Type type, out object networkPackage);
 
         byte[] Serialize(object networkPackage);
     }
